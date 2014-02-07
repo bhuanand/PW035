@@ -118,4 +118,11 @@ class SonusReader(object):
     def from_ogg(cls, fileName):
         return cls.from_file(fileName, extension='ogg')
 
+
+def preprocessAudio(fileName, noise, signalLength):
+    '''
+    preprocess the audio by removing the silent regions
+    in the audio.
+    '''
+    pass
 __all__ = [SonusReader]
