@@ -1,5 +1,9 @@
 *.py[cod]
 
+# dont add pyc files
+*.pyc
+*.py~
+
 # C extensions
 *.so
 
