@@ -124,5 +124,5 @@ def preprocessAudio(fileName, noise, signalLength):
     preprocess the audio by removing the silent regions
     in the audio.
     '''
-    pass
+    
 __all__ = [SonusReader]
