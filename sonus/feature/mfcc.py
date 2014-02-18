@@ -81,4 +81,7 @@ def mfcc(signal, samplerate = 16000, windowLength = 0.025, windowStep = 0.01,\
     # now put cepstral - delta - delta delta coeffs together
     res = np.append(cepstrals, delta, axis = 1)
     
-    return np.append(res, delta_delta, axis = 1)
+    res = np.append(res, delta_delta, axis = 1)
+
+    # remove the inf and nan values in the result
+    return res[ ~np.isnan(res).any(axis = 1)]

@@ -4,7 +4,8 @@ import scipy.cluster.vq as svq
 import os
 import random
 
-muAndSigma = lambda data: np.mean(data, axis = 0), np.cov(data, rowvar = 0)
+def muAndSigma(data):
+    return np.mean(data, axis = 0), np.cov(data, rowvar = 0)
 
 class GaussianCluster(object):
     '''
@@ -83,6 +84,8 @@ class GaussianMixtureModel(object):
                 models, apriori = self.__kmeans_initialization()
         else:
             models, apriori = self.__kmeans_initialization()
+        
+        return models, apriori
 
     def __uniform_initialization(self):
         '''
@@ -156,11 +159,3 @@ class GaussianMixtureModel(object):
         apriori = np.ones(self._nClusters, dtype = np.float32) / np.array([len(elem) for elem in clusterData])
 
         return models, apriori
-
-
-
-
-
-
-
-

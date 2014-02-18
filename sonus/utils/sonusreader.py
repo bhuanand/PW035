@@ -108,7 +108,26 @@ class SonusReader(object):
 
     @classmethod
     def from_wav(cls, fileName):
-        return cls(fileName)
+        outputFile = NamedTemporaryFile(mode = 'w+b', delete = False)
+        command = [
+            converter, '-y',
+            '-i', fileName, # specifying input file
+            '-vn', # drop any video streams in the file
+            '-sn', # drop any subtitles present in the file
+            '-f', 'wav', # specify the output file format needed
+            '-ar', '22050', # uniform sample rate for all audio files
+            outputFile.name
+            ]
+
+        # now use ffmpeg for conversion
+        subprocess.call(command, stdout = open(os.devnull), stderr = open(os.devnull))
+        
+        outputFile.flush()
+        obj = cls(outputFile.name)
+        outputFile.close()
+        os.unlink(outputFile.name)
+        
+        return obj
 
     @classmethod
     def from_mp3(cls, fileName):
