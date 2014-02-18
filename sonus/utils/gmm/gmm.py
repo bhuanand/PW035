@@ -1,6 +1,6 @@
 import numpy as np
 import scipy as sp
-import scipy.cluster.vq as svq
+import Pycluster
 import os
 import random
 
@@ -12,14 +12,34 @@ class GaussianCluster(object):
     a class for holding values: (responsibilities) of
     each cluster in a Gaussian Model
     '''
-    def __init__(self, mean, covariance, aprioriVals):
+    def __init__(self, mean, covariance):
         '''
         constructor for GaussianCluster class
         input calues:
-            mean, covariance and aprioriVals
+            mean, covariance.
         '''
         self._mean = mean
         self._covariance = covariance
+
+    @property
+    def mean(self):
+        '''get the mean value'''
+        return self._mean
+
+    @mean.setter
+    def mean(self, imean):
+        '''set the mean value'''
+        self._mean = imean
+
+    @property
+    def covariance(self):
+        '''get the covariance value'''
+        return self._covariance
+    
+    @covariance.setter
+    def covariance(self, icovariance):
+        '''set the covariance value'''
+        self._covariance = icovariance
     
 class GaussianMixtureModel(object):
     '''
@@ -46,6 +66,31 @@ class GaussianMixtureModel(object):
         self._nClusters = nClusters
         self._options = options
         self._models, self._apriori = self.initializeClusters()
+        
+    @property
+    def data(self):
+        '''get the data'''
+        return self._data
+    
+    @property
+    def nClusters(self):
+        '''get number of clusters'''
+        return self._nClusters
+
+    @property
+    def options(self):
+        '''get the properties'''
+        return self._options
+
+    @property
+    def models(self):
+        '''get the models in gmm'''
+        return self._models
+
+    @property
+    def apriori(self):
+        '''get the apriori values'''
+        return self._apriori
         
     def initializeClusters(self):
         '''
@@ -103,7 +148,7 @@ class GaussianMixtureModel(object):
         # create clusters with the data got from chunks
         models = []
         for i in xrange(self._nClusters):
-            models.append(GaussianCluster( *muAndSigma( data[i * chunkSize: (i + 1) * chunkSize])))
+            models.append(GaussianCluster( *muAndSigma( self._data[i * chunkSize: (i + 1) * chunkSize])))
 
         apriori = np.ones(self._nClusters, dtype = np.float32) / self._nClusters
         
@@ -119,7 +164,7 @@ class GaussianMixtureModel(object):
         random.seed(os.getpid())
 
         # now select random samples from the data
-        randomSamples = random.sample(data, self._nClusters)
+        randomSamples = random.sample(self._data, self._nClusters)
         
         # temporary list to hold the data for each clusters
         randomData = [[] for i in xrange(self._nClusters)]
@@ -146,7 +191,7 @@ class GaussianMixtureModel(object):
         algorithm.
         '''
         # apply kmeans clustering to get the centroids and labels for each vector in data
-        centres, labels = svq.kmeans2(self._data, self._nClusters, iter=70, minit='random')
+        labels, error, nfound = Pycluster.kcluster(self._data, self._nClusters)
 
         clusterData = [[] for i in xrange(self._nClusters)]
 
