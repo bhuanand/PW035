@@ -8,7 +8,7 @@ import sonus.utils.sonusreader as sonusreader
 import sonus.utils.gmm.gmm as gmm
 
 def main():
-    audio = sonusreader.SonusReader.from_file(os.path.join(os.path.expanduser('~'),'Desktop/.all-folders/sci-python/smashingbaby.wav'))
+    audio = sonusreader.SonusReader.from_file(os.path.join(os.path.expanduser('~'),'smashingbaby.wav'))
 
     mfccs = mfcc.mfcc(audio.data, samplerate=audio.samplerate)
 
