@@ -1,3 +1,3 @@
 import sonusreader
-import gmm
-__all__=[sonusreader, gmm]
+__all__=[sonusreader]
+
