@@ -83,5 +83,15 @@ def mfcc(signal, samplerate = 16000, windowLength = 0.025, windowStep = 0.01,\
     
     res = np.append(res, delta_delta, axis = 1)
 
-    # remove the inf and nan values in the result
-    return res[ ~np.isnan(res).any(axis = 1)]
+    # remove the nan values in the result
+    res = res[ ~np.isnan(res).any(axis = 1)]
+    res = res[ ~np.isinf(res).any(axis = 1)]
+
+    return res[ ~np.isneginf(res).any(axis = 1)]
+
+
+
+
+
+
+
