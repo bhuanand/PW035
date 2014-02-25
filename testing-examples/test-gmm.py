@@ -5,14 +5,14 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 
 import sonus.feature.mfcc as mfcc
 import sonus.utils.sonusreader as sonusreader
-import sonus.utils.gmm.gmm as gmm
+import sonus.gmm.gmm as gmm
 
 def main():
     audio = sonusreader.SonusReader.from_file(os.path.join(os.path.expanduser('~'),'smashingbaby.wav'))
 
     mfccs = mfcc.mfcc(audio.data, samplerate=audio.samplerate)
 
-    print mfccs[0]
+    print len(mfccs)
 
     # crete a GMM object
     # replace option -> method with 'uniform', 'random', 'kmeans'
@@ -23,10 +23,13 @@ def main():
             'method':'kmeans'
             })
     
-    print GMM.models[0].mean
-
+    GMM.expectationMaximization()
+    
+    print 'done!'
 if __name__ == '__main__':
     main()
+
+
 
 
 
