@@ -1,3 +1,4 @@
 import feature
 import utils
-__all__=[feature, utils]
+import gmm
+__all__=[feature, utils,gmm]
