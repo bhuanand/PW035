@@ -281,7 +281,7 @@ class GaussianMixtureModel(object):
             # expectation step
             resp = self.eStep()
             
-            logprob = logsumexp(resp, axis = 1)
+            logprob = likelihood(resp)
             
             loglikelihood.append(logprob.sum())
 
@@ -342,18 +342,12 @@ class GaussianMixtureModel(object):
 def likelihood(resp):
     '''compute log(sum(exp)))'''
     # get the row wise sum
-    sums = np.sum(resp, axis = 1)
+    maxs = np.max(resp, axis = 1)
+
+
+    sums = np.sum(np.exp(resp - maxs[:, np.newaxis]), axis = 1)
 
     # apply logarithm
     logsums = np.log(sums)
 
-    # take the summation
-    return np.sum(logsums)
-    
-def logsumexp(resp, axis = 0):
-    '''compute logsumexp'''
-    resp =np.rollaxis(resp,axis)
-    vmax =resp.max(axis=0)
-    out = np.log(np.sum(np.exp(resp- vmax), axis=0))
-    out += vmax
-    return out
+    return logsums
