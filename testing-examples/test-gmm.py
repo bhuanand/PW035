@@ -20,7 +20,7 @@ def main():
         data=mfccs, 
         nClusters=4,
         options={
-            'method':'kmeans'
+            'method':'uniform'
             })
     
     GMM.expectationMaximization()
