@@ -356,7 +356,7 @@ class GaussianMixtureModel(object):
 
         # 3. compute the covariance, done :-)
         covariance = covariance / respTranspose.sum(axis = 1)[:, np.newaxis]
-        
+
         # now update the mean and covariance values of all models
         for i in xrange(self.nClusters):
             self.models[i].updateCluster(means[i], np.diag(covariance[i]))
