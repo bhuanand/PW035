@@ -12,8 +12,6 @@ def main():
 
     mfccs = mfcc.mfcc(audio.data, samplerate=audio.samplerate)
 
-    print len(mfccs)
-
     # crete a GMM object
     # replace option -> method with 'uniform', 'random', 'kmeans'
     GMM = gmm.GaussianMixtureModel(
@@ -25,7 +23,6 @@ def main():
     
     GMM.expectationMaximization()
     
-    print 'done!'
 if __name__ == '__main__':
     main()
 

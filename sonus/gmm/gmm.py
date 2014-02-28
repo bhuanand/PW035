@@ -293,8 +293,6 @@ class GaussianMixtureModel(object):
         '''
         likelihood = list()
 
-        print str(self.apriori), str(np.sum(self.apriori))
-
         for i in xrange(iterations):
             # expectation step
             resp = self.eStep()
@@ -306,9 +304,7 @@ class GaussianMixtureModel(object):
                 break
             
             # maximization step
-            self.mStep(resp)            
-            
-            print str(self.apriori), str(np.sum(self.apriori))
+            self.mStep(resp)
 
     def eStep(self):
         '''expectation step'''
