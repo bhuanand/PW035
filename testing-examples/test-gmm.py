@@ -12,20 +12,17 @@ def main():
 
     mfccs = mfcc.mfcc(audio.data, samplerate=audio.samplerate)
 
-    print len(mfccs)
-
     # crete a GMM object
     # replace option -> method with 'uniform', 'random', 'kmeans'
     GMM = gmm.GaussianMixtureModel(
         data=mfccs, 
         nClusters=4,
         options={
-            'method':'kmeans'
+            'method':'random'
             })
     
     GMM.expectationMaximization()
     
-    print 'done!'
 if __name__ == '__main__':
     main()
 

@@ -269,33 +269,42 @@ class GaussianMixtureModel(object):
 
         return models, apriori
     
+
+    def means(self):
+        '''return the list of mean values of all comprising models'''
+        res = [self.models[i].mean for i in xrange(self.nClusters)]
+
+        return res
+
+    def covariance(self):
+        '''return the list covariance matrices of all comprising models'''
+        res = [self.models[i].covariance for i in xrange(self.nClusters)]
+
+        return res
+
+    def loglikelihood(self, resp):
+        '''compute the log likelihood of gaussian mixture'''
+        return np.sum( np.log( np.sum( resp, axis = 1)))
+    
     def expectationMaximization(self, iterations = 40):
         '''
         apply the expectation maximization algorithm to maximize the likelihood 
         of a data belonging to particular class. 
         '''
-        loglikelihood = list()
+        likelihood = list()
 
-        count = 1
         for i in xrange(iterations):
             # expectation step
             resp = self.eStep()
             
-            logprob = likelihood(resp)
-            
-            loglikelihood.append(logprob.sum())
-
-            resp = np.exp(resp - logprob[:, np.newaxis])
+            likelihood.append(self.loglikelihood(resp))
 
             # check for convergence
-            if i > 0 and abs(loglikelihood[-1] - loglikelihood[-2]) < 1e-5:
+            if i > 1 and abs(likelihood[-1] - likelihood[-2]) < 1e-1:
                 break
             
             # maximization step
-            self.mStep(resp)            
-            count = count + 1
-
-        print 'count', str(count)
+            self.mStep(resp)
 
     def eStep(self):
         '''expectation step'''
@@ -304,50 +313,49 @@ class GaussianMixtureModel(object):
         for i in xrange(len(self.data)):
             for j in xrange(self.nClusters):
                 resp[i, j] = self.apriori[j] * self.models[j].gaussianPDF(self.data[i])
+            
+            resp[i] = resp[i] / np.sum(resp[i], axis = 0)
                 
         return resp
-
+        
     def mStep(self, resp):
-        '''maximization step'''
+        '''
+        maximization step
+        followed wikipedia
+        http://en.wikibooks.org/wiki/Data_Mining_Algorithms_In_R/Clustering/Expectation_Maximization_%28EM%29
+        used formulae's on this page for computing.
+        '''        
+        # get the transpose of expected values for further usage
+        # within the function
+        respTranspose = resp.T
+
+        # computing the mean matrix
+        apriori_data_sum = np.dot(respTranspose, self.data)
+
+        # maximize mean values, done :-)
+        means = apriori_data_sum / respTranspose.sum(axis = 1)[:, np.newaxis]
+
+        # computing the covariance matrix
+        # 1. compute the difference term on numerator
+        # 2. compute the whole term on numerator
+        # 3. compute the covariance
         
-        apriori = resp.sum(axis = 0)
-        
-        apriori_data_sum = np.dot(resp.T, self.data)
+        # 1. compute the difference term on numerator
+        diffmatrix = np.zeros((len(self.data), self.nClusters))
 
-        # update the apriori vals
-        self.apriori = apriori / apriori.sum()
+        diffmatrix = [[data - mean for mean in self.means()] for data in self.data]
 
-        # maximize mean values
-        means = apriori_data_sum / (1.0 * apriori[:, np.newaxis])
+        diffmatrixsqr = np.multiply(diffmatrix, diffmatrix)
 
-        firstterm = np.dot(resp.T, self.data * self.data)
+        # 2. compute the whole term on the numerator
+        covariance = [np.dot(respTranspose[i], diffmatrixsqr[:, i]) for i in xrange(self.nClusters)]
 
-        meanssqr = means ** 2
-
-        covariance = firstterm / (1.0 * apriori[:, np.newaxis])
-        
-        avg_data_means = means * apriori_data_sum * (1.0 * apriori[:, np.newaxis])
-
-        # maximize covariance values
-        covariance = covariance - meanssqr + 1e-3
-
-        print self.models[2].covariance
+        # 3. compute the covariance, done :-)
+        covariance = covariance / respTranspose.sum(axis = 1)[:, np.newaxis]
 
         # now update the mean and covariance values of all models
         for i in xrange(self.nClusters):
             self.models[i].updateCluster(means[i], np.diag(covariance[i]))
-
-        print self.models[2].covariance
-
-def likelihood(resp):
-    '''compute log(sum(exp)))'''
-    # get the row wise sum
-    maxs = np.max(resp, axis = 1)
-
-
-    sums = np.sum(np.exp(resp - maxs[:, np.newaxis]), axis = 1)
-
-    # apply logarithm
-    logsums = np.log(sums)
-
-    return logsums
+            
+        # now compute the probability of a data belonging to a particular cluster
+        self.apriori = np.sum(respTranspose, axis = 1) / float(len(self.data))
