@@ -2,7 +2,9 @@ import numpy as np
 import scipy as sp
 import Pycluster
 import os
+import sys
 import random
+import cPickle
 
 def muAndSigma(data, nclusters):
     return np.mean(data, axis = 0), np.cov(data, rowvar = 0), nclusters
@@ -300,7 +302,7 @@ class GaussianMixtureModel(object):
             likelihood.append(self.loglikelihood(resp))
 
             # check for convergence
-            if i > 1 and abs(likelihood[-1] - likelihood[-2]) < 1e-1:
+            if i > 1 and abs(likelihood[-1] - likelihood[-2]) < 1e-4:
                 break
             
             # maximization step
@@ -359,3 +361,136 @@ class GaussianMixtureModel(object):
             
         # now compute the probability of a data belonging to a particular cluster
         self.apriori = np.sum(respTranspose, axis = 1) / float(len(self.data))
+
+
+    @classmethod
+    def saveobject(cls, obj, filepath = None):
+        '''saves the gmm object for next time usage'''
+
+        homedir = os.path.expanduser('~')
+
+        # if file name is not specified
+        if not filepath:
+            # store the object at the ~/sonus/gmm-object
+            # check if the path already exists
+            
+            if os.path.exists(os.path.join(homedir, 'sonus/gmm-object')):
+                # store the object to this file
+                fobj = open(os.path.join(homedir, 'sonus/gmm-object'), 'wb')
+            else:
+                if not os.path.exists(os.path.join(homedir, 'sonus')):
+                    # create the directory and files then store the object to the file
+                    os.mkdir( os.path.join( homedir, 'sonus'))
+          
+                # create the file
+                fobj = open( os.path.join( homedir, 'sonus/gmm-object'), 'wb')
+
+            # write to the file
+            cPickle.dump( obj, fobj)
+
+            print 'saved object to file: {0}'.format(fobj.name)
+
+            fobj.close()
+        else:
+            # file name is specified
+            # check if the specified path exists
+            
+            filepath = os.path.expanduser(filepath)
+
+            if os.path.exists(filepath):
+                # check if it is a file path
+
+                if not os.path.isfile(filepath):
+                    if os.path.isdir(filepath):
+                        # create a file under this directory
+                        fobj = open(os.path.join(filepath, 'gmm-object'), 'wb')
+                else:
+                    # it is a file path, open it
+                    fobj = open(filepath, 'wb')
+            else:
+                # create file at ~/sonus/
+                if not os.path.exists(os.path.join(homedir, 'sonus')):
+                    # create the directory and files then store the object to the file
+                    os.mkdir( os.path.join( homedir, 'sonus'))
+          
+                # create the file
+                fobj = open( os.path.join( homedir, 'sonus/gmm-object'), 'wb')
+
+            # write to the file
+            cPickle.dump( obj, fobj)
+
+            print 'saved to the file: {0}'.format(fobj.name)
+
+            fobj.close()
+    
+    @classmethod
+    def loadobject(cls, filepath = None):
+        '''loads the previosly stored object'''
+        
+        homedir = os.path.expanduser('~')
+
+        obj = None
+
+        # file path is not specified
+        if not filepath:
+            # try to load it from default path ~/sonus/gmm-object
+            
+            # if the ~/sonus/gmm-object already exists
+            if os.path.exists(os.path.join(homedir, 'sonus/gmm-object')):
+                fobj = open(os.path.join(homedir, 'sonus/gmm-object'), 'rb')
+                obj = cPickle.load(fobj)
+            else:
+                #if the ~/sonus/gmm-object doesnt exists, raise error
+                errormsg = '''
+                file path argument is not specified.\n
+                tried loading from path {0}. but the path {0} doesnt exists.\n
+                please either specify a valid filepath or make sure you have\n
+                saved the object.
+                '''.format(os.path.join(homedir, 'sonus/gmm-object'))
+                
+                raise Exception(errormsg)
+        else:
+            filepath = os.path.expanduser(filepath)
+
+            # file path is specified
+            if os.path.exists(filepath):
+                # check if it is a file path
+
+                if not os.path.isfile(filepath):
+                    if os.path.isdir(filepath):
+                        # raise error
+                        raise Exception('please specify valid file path, you have specified a directory')
+                else:
+                    try:
+                        # it is a file path, open it
+                        fobj = open(filepath, 'rb')
+                        obj = cPickle.load(fobj)
+                    except EOFError, e:
+                        print 'the file doesnt contain valid object.' + e.message
+            else:
+                if os.path.exists(os.path.join(homedir, 'sonus/gmm-object')):
+                    fobj = open(os.path.join(homedir, 'sonus/gmm-object'), 'rb')
+                    obj = cPickle.load(fobj)
+                else:
+                    errormsg = '''
+                    the file path specified: {0} doesnt exists.\n
+                    tried loading the object from default location {1}.\n
+                    but the default path also doesnt exist. please make sure to\n
+                    give the valid file name or to call saveobject before loading it.
+                    '''.format(filepath, os.path.join(homedir, 'sonus/gmm-object'))
+
+                    raise Exception(errormsg)
+        
+        # check if the loaded object is an instance of this class
+        if not isinstance(obj, cls):
+            errormsg = '''
+            the file doesnt contain the object of type {0}.
+            '''.format(cls.__name__)
+            
+            raise Exception(errormsg)
+        
+        print 'loading from the file: {0}'.format(fobj.name)
+        
+        fobj.close()
+
+        return obj
