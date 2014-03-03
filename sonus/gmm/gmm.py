@@ -370,15 +370,18 @@ class GaussianMixtureModel(object):
         homedir = os.path.expanduser('~')
 
         # if file name is not specified
+        # store the object at the ~/sonus/gmm-object
         if not filepath:
-            # store the object at the ~/sonus/gmm-object
-            # check if the path already exists
-            
+           
+            # check if the path already exists            
             if os.path.exists(os.path.join(homedir, 'sonus/gmm-object')):
+
                 # store the object to this file
                 fobj = open(os.path.join(homedir, 'sonus/gmm-object'), 'wb')
             else:
+                # check if default path already exists
                 if not os.path.exists(os.path.join(homedir, 'sonus')):
+
                     # create the directory and files then store the object to the file
                     os.mkdir( os.path.join( homedir, 'sonus'))
           
@@ -393,23 +396,27 @@ class GaussianMixtureModel(object):
             fobj.close()
         else:
             # file name is specified
-            # check if the specified path exists
             
             filepath = os.path.expanduser(filepath)
 
+            # check if the specified path exists
             if os.path.exists(filepath):
-                # check if it is a file path
 
+                # check if it is a filepath
                 if not os.path.isfile(filepath):
+                    
+                    # check if it is a directory
                     if os.path.isdir(filepath):
+
                         # create a file under this directory
                         fobj = open(os.path.join(filepath, 'gmm-object'), 'wb')
                 else:
                     # it is a file path, open it
                     fobj = open(filepath, 'wb')
             else:
-                # create file at ~/sonus/
+                # create file at default path ~/sonus/
                 if not os.path.exists(os.path.join(homedir, 'sonus')):
+
                     # create the directory and files then store the object to the file
                     os.mkdir( os.path.join( homedir, 'sonus'))
           
@@ -432,15 +439,17 @@ class GaussianMixtureModel(object):
         obj = None
 
         # file path is not specified
+        # try to load it from default path ~/sonus/gmm-object
         if not filepath:
-            # try to load it from default path ~/sonus/gmm-object
-            
+
             # if the ~/sonus/gmm-object already exists
             if os.path.exists(os.path.join(homedir, 'sonus/gmm-object')):
                 fobj = open(os.path.join(homedir, 'sonus/gmm-object'), 'rb')
+                
                 obj = cPickle.load(fobj)
             else:
-                #if the ~/sonus/gmm-object doesnt exists, raise error
+                #if the ~/sonus/gmm-object file doesnt exists, raise error
+
                 errormsg = '''
                 file path argument is not specified.\n
                 tried loading from path {0}. but the path {0} doesnt exists.\n
@@ -450,28 +459,42 @@ class GaussianMixtureModel(object):
                 
                 raise Exception(errormsg)
         else:
+            # user has specified the file path
+            
+            # expand ~ if present
             filepath = os.path.expanduser(filepath)
 
-            # file path is specified
+            # check if the path exists
             if os.path.exists(filepath):
-                # check if it is a file path
 
+                # check if it is a file
                 if not os.path.isfile(filepath):
+                    
+                    # check if it is a directory
                     if os.path.isdir(filepath):
+                        
                         # raise error
                         raise Exception('please specify valid file path, you have specified a directory')
                 else:
                     try:
                         # it is a file path, open it
                         fobj = open(filepath, 'rb')
+                        
                         obj = cPickle.load(fobj)
                     except EOFError, e:
                         print 'the file doesnt contain valid object.' + e.message
             else:
+                # user specified file doesnt exists
+
+                # check if default path for stroring object exists
                 if os.path.exists(os.path.join(homedir, 'sonus/gmm-object')):
+                    
+                    # store the object
                     fobj = open(os.path.join(homedir, 'sonus/gmm-object'), 'rb')
+
                     obj = cPickle.load(fobj)
                 else:
+                    # default path for storing object doesnt exists
                     errormsg = '''
                     the file path specified: {0} doesnt exists.\n
                     tried loading the object from default location {1}.\n
