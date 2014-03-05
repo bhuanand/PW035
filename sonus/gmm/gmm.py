@@ -287,7 +287,17 @@ class GaussianMixtureModel(object):
     def loglikelihood(self, resp):
         '''compute the log likelihood of gaussian mixture'''
         return np.sum( np.log( np.sum( resp, axis = 1)))
-    
+
+    def fit(self, data):
+        '''fits the data GMM, and return the label of GMM model it belongs'''
+        resp = self.eStep(data)
+
+        res = resp.argmax(axis = 1)
+        
+        unique_vals, indices = np.unique(res, return_inverse=True)
+
+        return unique_vals[ np.argmax( np.bincount( indices))]
+
     def train(self, data = None):
         '''for training more'''
         if data:
