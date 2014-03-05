@@ -22,6 +22,8 @@ def main():
             })
     
     GMM.train()
+
+    print GMM.fit(mfccs)
     
     # default paths - done
     # specifying file path - done
@@ -30,13 +32,13 @@ def main():
     # specifying a path doesnt exists - done
     # call load before save - done
     # invalid file path + obj not saved - done
-    gmm.GaussianMixtureModel.saveobject(GMM)
+    # gmm.GaussianMixtureModel.saveobject(GMM)
 
-    newobj = gmm.GaussianMixtureModel.loadobject()
+    # newobj = gmm.GaussianMixtureModel.loadobject()
 
-    print newobj.apriori
+    # print newobj.apriori
 
-    print sum(newobj.apriori)
+    # print sum(newobj.apriori)
     
 if __name__ == '__main__':
     main()
