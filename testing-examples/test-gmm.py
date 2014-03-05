@@ -16,12 +16,12 @@ def main():
     # replace option -> method with 'uniform', 'random', 'kmeans'
     GMM = gmm.GaussianMixtureModel(
         data=mfccs, 
-        nClusters=4,
+        nClusters=2,
         options={
             'method':'random'
             })
     
-    GMM.expectationMaximization()
+    GMM.train()
     
     # default paths - done
     # specifying file path - done
@@ -34,11 +34,7 @@ def main():
 
     newobj = gmm.GaussianMixtureModel.loadobject()
 
-    print GMM.apriori
-
     print newobj.apriori
-
-    print sum(GMM.apriori)
 
     print sum(newobj.apriori)
     
