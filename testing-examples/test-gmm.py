@@ -21,7 +21,7 @@ def main():
             'method':'random'
             })
     
-    GMM.expectationMaximization()
+    GMM.train()
     
     # default paths - done
     # specifying file path - done
@@ -34,11 +34,7 @@ def main():
 
     newobj = gmm.GaussianMixtureModel.loadobject()
 
-    print GMM.apriori
-
     print newobj.apriori
-
-    print sum(GMM.apriori)
 
     print sum(newobj.apriori)
     

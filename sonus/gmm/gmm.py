@@ -288,7 +288,14 @@ class GaussianMixtureModel(object):
         '''compute the log likelihood of gaussian mixture'''
         return np.sum( np.log( np.sum( resp, axis = 1)))
     
-    def expectationMaximization(self, iterations = 40):
+    def train(self, data = None):
+        '''for training more'''
+        if data:
+            self.expectationMaximization(data)
+        else:
+            self.expectationMaximization(self.data)
+
+    def expectationMaximization(self, data, iterations = 40):
         '''
         apply the expectation maximization algorithm to maximize the likelihood 
         of a data belonging to particular class. 
@@ -297,7 +304,7 @@ class GaussianMixtureModel(object):
 
         for i in xrange(iterations):
             # expectation step
-            resp = self.eStep()
+            resp = self.eStep(data)
             
             likelihood.append(self.loglikelihood(resp))
 
@@ -306,21 +313,21 @@ class GaussianMixtureModel(object):
                 break
             
             # maximization step
-            self.mStep(resp)
+            self.mStep(data, resp)
 
-    def eStep(self):
+    def eStep(self, data):
         '''expectation step'''
-        resp = np.zeros((len(self.data), self.nClusters))
+        resp = np.zeros((len(data), self.nClusters))
                         
-        for i in xrange(len(self.data)):
+        for i in xrange(len(data)):
             for j in xrange(self.nClusters):
-                resp[i, j] = self.apriori[j] * self.models[j].gaussianPDF(self.data[i])
+                resp[i, j] = self.apriori[j] * self.models[j].gaussianPDF(data[i])
             
             resp[i] = resp[i] / np.sum(resp[i], axis = 0)
                 
         return resp
         
-    def mStep(self, resp):
+    def mStep(self, data, resp):
         '''
         maximization step
         followed wikipedia
@@ -332,7 +339,7 @@ class GaussianMixtureModel(object):
         respTranspose = resp.T
 
         # computing the mean matrix
-        apriori_data_sum = np.dot(respTranspose, self.data)
+        apriori_data_sum = np.dot(respTranspose, data)
 
         # maximize mean values, done :-)
         means = apriori_data_sum / respTranspose.sum(axis = 1)[:, np.newaxis]
@@ -343,9 +350,9 @@ class GaussianMixtureModel(object):
         # 3. compute the covariance
         
         # 1. compute the difference term on numerator
-        diffmatrix = np.zeros((len(self.data), self.nClusters))
+        diffmatrix = np.zeros((len(data), self.nClusters))
 
-        diffmatrix = [[data - mean for mean in self.means()] for data in self.data]
+        diffmatrix = [[d - mean for mean in self.means()] for d in data]
 
         diffmatrixsqr = np.multiply(diffmatrix, diffmatrix)
 
@@ -360,7 +367,7 @@ class GaussianMixtureModel(object):
             self.models[i].updateCluster(means[i], np.diag(covariance[i]))
             
         # now compute the probability of a data belonging to a particular cluster
-        self.apriori = np.sum(respTranspose, axis = 1) / float(len(self.data))
+        self.apriori = np.sum(respTranspose, axis = 1) / float(len(data))
 
 
     @classmethod
@@ -517,3 +524,5 @@ class GaussianMixtureModel(object):
         fobj.close()
 
         return obj
+
+__all__ = [GaussianMixtureModel]
