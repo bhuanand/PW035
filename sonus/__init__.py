@@ -1,4 +1,5 @@
 import feature
 import utils
 import gmm
-__all__=[feature, utils,gmm]
+import plots
+__all__=[feature, utils,gmm,plots]
