@@ -16,7 +16,7 @@ def main():
     # replace option -> method with 'uniform', 'random', 'kmeans'
     GMM = gmm.GaussianMixtureModel(
         data=mfccs, 
-        nClusters=4,
+        nClusters=2,
         options={
             'method':'random'
             })
