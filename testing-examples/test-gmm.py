@@ -6,7 +6,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 import sonus.feature.mfcc as mfcc
 import sonus.utils.sonusreader as sonusreader
 import sonus.gmm.gmm as gmm
-import sonus.plots.plot_mfcc as plot_mfcc
 
 def main():
     audio = sonusreader.SonusReader.from_file(os.path.join(os.path.expanduser('~'),'smashingbaby.wav'))
