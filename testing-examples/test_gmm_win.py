@@ -103,7 +103,7 @@ def main():
         'method':'uniform'
         })
 
-    GMM.train()
+    GMM.expectationMaximization()
 
     gmm.GaussianMixtureModel.saveobject(GMM, filepath="C:\\Users\\bhuvan\\sonus\\gmm-uniform")
 
