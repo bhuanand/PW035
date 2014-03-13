@@ -42,7 +42,7 @@ class GaussianCluster(object):
     def covariance(self):
         '''get the covariance value'''
         return self._covariance
-    
+
     @covariance.setter
     def covariance(self, icovariance):
         '''set the covariance value'''
@@ -57,7 +57,7 @@ class GaussianCluster(object):
     def precisionMatrix(self):
         '''get precisionMatrix'''
         return self._precisionMatrix
-    
+
     @precisionMatrix.setter
     def precisionMatrix(self, iprecisionMatrix):
         '''set the precisionMatrix'''
@@ -67,7 +67,7 @@ class GaussianCluster(object):
     def determinant(self):
         '''get the determinant'''
         return self._determinant
-    
+
     @determinant.setter
     def determinant(self, ideterminant):
         '''set the determinant'''
@@ -101,11 +101,11 @@ class GaussianCluster(object):
         difference = idata - self.mean
         pdf = self.denominator * np.exp( -0.5 * np.dot( np.dot(difference.transpose(), self.precisionMatrix),  difference))
         return pdf
-    
+
 class GaussianMixtureModel(object):
     '''
     representation of Gaussian Mixture Model probability distribution.
-    
+
     initializes the parameters such that every mixture component has means
     calculated from K - means cluster algorithm and covariance type is diagonal.
 
@@ -113,7 +113,7 @@ class GaussianMixtureModel(object):
         Gaussian Mixture Models are typically fitted using EM algorithm.
         this algorithm makes iterative estimation of model parameters(thetas)
         for the GMM's.
-        
+
         the implementation of EM algorithm starts with the initial estimations
         for mu and sigma (mean and covariance).
 
@@ -127,12 +127,12 @@ class GaussianMixtureModel(object):
         self._nClusters = nClusters
         self._options = options
         self._models, self._apriori = self.initializeClusters()
-        
+
     @property
     def data(self):
         '''get the data'''
         return self._data
-    
+
     @property
     def nClusters(self):
         '''get number of clusters'''
@@ -152,7 +152,7 @@ class GaussianMixtureModel(object):
     def apriori(self):
         '''get the apriori values'''
         return self._apriori
-        
+
     @apriori.setter
     def apriori(self, iapriori):
         '''set the apriori vals'''
@@ -162,8 +162,8 @@ class GaussianMixtureModel(object):
         '''
         Given the number of clusters and the data,
         lets initialize the responsibilities of each class.
-        
-        responsibilities include 
+
+        responsibilities include
         '''
         # get the dimension of the input data
         rows, cols = self._data.shape
@@ -173,7 +173,7 @@ class GaussianMixtureModel(object):
 
         # now initialize the values for \mu and \sigma
         # representing the mean and covariance for each of the clusters
-        
+
         models = []
         aproiri = []
 
@@ -182,9 +182,9 @@ class GaussianMixtureModel(object):
 
             if self._options.get('method', False):
                 # get the method of initialization specified
-                
+
                 method = self._options.get('method')
-                
+
                 if method == 'uniform':
                     models, apriori = self.__uniform_initialization()
                 elif method == 'random':
@@ -195,15 +195,15 @@ class GaussianMixtureModel(object):
                 models, apriori = self.__kmeans_initialization()
         else:
             models, apriori = self.__kmeans_initialization()
-        
+
         return models, apriori
 
     def __uniform_initialization(self):
         '''
-        given the data points, uniformly assign them to different 
+        given the data points, uniformly assign them to different
         clusters then estimate the parameters
         '''
-        
+
         # shuffle the data in the input
         np.random.shuffle(self._data)
 
@@ -217,36 +217,36 @@ class GaussianMixtureModel(object):
             models.append(GaussianCluster( *muAndSigma( self._data[i * chunkSize: (i + 1) * chunkSize], self.nClusters)))
 
         apriori = np.ones(self._nClusters, dtype = np.float32) / self._nClusters
-        
+
         return models, apriori
 
     def __random_initialization(self):
-        ''' 
+        '''
         given the data points, randomly assign them to different
         clsuters then estimate the parameters
         '''
-        
+
         # set the seed value for the random
         random.seed(os.getpid())
 
         # now select random samples from the data
         randomSamples = random.sample(self._data, self._nClusters)
-        
+
         # temporary list to hold the data for each clusters
         randomData = [[] for i in xrange(self._nClusters)]
 
         # assign the data to clusters
         for vector in self._data:
             index = np.argmin( [np.linalg.norm(vector - row) for row in randomSamples])
-            
+
             if index < self._nClusters:
-                randomData[index].append(vector) 
+                randomData[index].append(vector)
             else:
                 randomData[random.randint(0, self._nClusters - 1)].append(vector)
 
-                
+
         models = [GaussianCluster( *muAndSigma(randomData[i], self.nClusters)) for i in xrange(self._nClusters)]
-        
+
         apriori = np.ones(self._nClusters, dtype = np.float32) / np.array([len(elem) for elem in randomData])
 
         return models, apriori
@@ -270,7 +270,7 @@ class GaussianMixtureModel(object):
         apriori = np.ones(self._nClusters, dtype = np.float32) / np.array([len(elem) for elem in clusterData])
 
         return models, apriori
-    
+
 
     def means(self):
         '''return the list of mean values of all comprising models'''
@@ -293,57 +293,57 @@ class GaussianMixtureModel(object):
         resp = self.eStep(data)
 
         res = resp.argmax(axis = 1)
-        
+
         unique_vals, indices = np.unique(res, return_inverse=True)
 
         return unique_vals[ np.argmax( np.bincount( indices))]
 
     def train(self, data = None):
         '''for training more'''
-        if data:
-            self.expectationMaximization(data)
-        else:
+        if data == None:
             self.expectationMaximization(self.data)
+        else:
+            self.expectationMaximization(data)
 
     def expectationMaximization(self, data, iterations = 40):
         '''
-        apply the expectation maximization algorithm to maximize the likelihood 
-        of a data belonging to particular class. 
+        apply the expectation maximization algorithm to maximize the likelihood
+        of a data belonging to particular class.
         '''
         likelihood = list()
 
         for i in xrange(iterations):
             # expectation step
             resp = self.eStep(data)
-            
+
             likelihood.append(self.loglikelihood(resp))
 
             # check for convergence
             if i > 1 and abs(likelihood[-1] - likelihood[-2]) < 1e-4:
                 break
-            
+
             # maximization step
             self.mStep(data, resp)
 
     def eStep(self, data):
         '''expectation step'''
         resp = np.zeros((len(data), self.nClusters))
-                        
+
         for i in xrange(len(data)):
             for j in xrange(self.nClusters):
                 resp[i, j] = self.apriori[j] * self.models[j].gaussianPDF(data[i])
-            
+
             resp[i] = resp[i] / np.sum(resp[i], axis = 0)
-                
+
         return resp
-        
+
     def mStep(self, data, resp):
         '''
         maximization step
         followed wikipedia
         http://en.wikibooks.org/wiki/Data_Mining_Algorithms_In_R/Clustering/Expectation_Maximization_%28EM%29
         used formulae's on this page for computing.
-        '''        
+        '''
         # get the transpose of expected values for further usage
         # within the function
         respTranspose = resp.T
@@ -358,7 +358,7 @@ class GaussianMixtureModel(object):
         # 1. compute the difference term on numerator
         # 2. compute the whole term on numerator
         # 3. compute the covariance
-        
+
         # 1. compute the difference term on numerator
         diffmatrix = np.zeros((len(data), self.nClusters))
 
@@ -375,7 +375,7 @@ class GaussianMixtureModel(object):
         # now update the mean and covariance values of all models
         for i in xrange(self.nClusters):
             self.models[i].updateCluster(means[i], np.diag(covariance[i]))
-            
+
         # now compute the probability of a data belonging to a particular cluster
         self.apriori = np.sum(respTranspose, axis = 1) / float(len(data))
 
@@ -391,8 +391,8 @@ class GaussianMixtureModel(object):
         # if file name is not specified
         # store the object at the ~/sonus/gmm-object
         if not filepath:
-           
-            # check if the path already exists            
+
+            # check if the path already exists
             if os.path.exists(os.path.join(homedir, sonus_gmmobject)):
 
                 # store the object to this file
@@ -403,7 +403,7 @@ class GaussianMixtureModel(object):
 
                     # create the directory and files then store the object to the file
                     os.mkdir( os.path.join( homedir, 'sonus'))
-          
+
                 # create the file
                 fobj = open( os.path.join( homedir, sonus_gmmobject), 'wb')
 
@@ -415,7 +415,7 @@ class GaussianMixtureModel(object):
             fobj.close()
         else:
             # file name is specified
-            
+
             filepath = os.path.expanduser(filepath)
 
             # check if the specified path exists
@@ -423,7 +423,7 @@ class GaussianMixtureModel(object):
 
                 # check if it is a filepath
                 if not os.path.isfile(filepath):
-                    
+
                     # check if it is a directory
                     if os.path.isdir(filepath):
 
@@ -438,7 +438,7 @@ class GaussianMixtureModel(object):
 
                     # create the directory and files then store the object to the file
                     os.mkdir( os.path.join( homedir, 'sonus'))
-          
+
                 # create the file
                 fobj = open( os.path.join( homedir, sonus_gmmobject), 'wb')
 
@@ -448,11 +448,11 @@ class GaussianMixtureModel(object):
             print 'saved to the file: {0}'.format(fobj.name)
 
             fobj.close()
-    
+
     @classmethod
     def loadobject(cls, filepath = None):
         '''loads the previosly stored object'''
-        
+
         homedir = os.path.expanduser('~')
 
         sonus_gmmobject = os.path.join('sonus', 'gmm-object')
@@ -466,7 +466,7 @@ class GaussianMixtureModel(object):
             # if the ~/sonus/gmm-object already exists
             if os.path.exists(os.path.join(homedir, sonus_gmmobject)):
                 fobj = open(os.path.join(homedir, sonus_gmmobject), 'rb')
-                
+
                 obj = cPickle.load(fobj)
             else:
                 #if the ~/sonus/gmm-object file doesnt exists, raise error
@@ -477,11 +477,11 @@ class GaussianMixtureModel(object):
                 please either specify a valid filepath or make sure you have\n
                 saved the object.
                 '''.format(os.path.join(homedir, sonus_gmmobject))
-                
+
                 raise Exception(errormsg)
         else:
             # user has specified the file path
-            
+
             # expand ~ if present
             filepath = os.path.expanduser(filepath)
 
@@ -490,17 +490,17 @@ class GaussianMixtureModel(object):
 
                 # check if it is a file
                 if not os.path.isfile(filepath):
-                    
+
                     # check if it is a directory
                     if os.path.isdir(filepath):
-                        
+
                         # raise error
                         raise Exception('please specify valid file path, you have specified a directory')
                 else:
                     try:
                         # it is a file path, open it
                         fobj = open(filepath, 'rb')
-                        
+
                         obj = cPickle.load(fobj)
                     except EOFError, e:
                         print 'the file doesnt contain valid object.' + e.message
@@ -509,7 +509,7 @@ class GaussianMixtureModel(object):
 
                 # check if default path for stroring object exists
                 if os.path.exists(os.path.join(homedir, sonus_gmmobject)):
-                    
+
                     # store the object
                     fobj = open(os.path.join(homedir, sonus_gmmobject), 'rb')
 
@@ -524,17 +524,17 @@ class GaussianMixtureModel(object):
                     '''.format(filepath, os.path.join(homedir, sonus_gmmobject))
 
                     raise Exception(errormsg)
-        
+
         # check if the loaded object is an instance of this class
         if not isinstance(obj, cls):
             errormsg = '''
             the file doesnt contain the object of type {0}.
             '''.format(cls.__name__)
-            
+
             raise Exception(errormsg)
-        
+
         print 'loading from the file: {0}'.format(fobj.name)
-        
+
         fobj.close()
 
         return obj
