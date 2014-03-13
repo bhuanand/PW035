@@ -185,16 +185,16 @@ class GaussianMixtureModel(object):
 
                 method = self._options.get('method')
 
-                if method == 'uniform':
-                    models, apriori = self.__uniform_initialization()
+                if method == 'kmeans':
+                    models, apriori = self.__kmeans_initialization()
                 elif method == 'random':
                     models, apriori = self.__random_initialization()
                 else:
-                    models, apriori = self.__kmeans_initialization()
+                    models, apriori = self.__uniform_initialization()
             else:
-                models, apriori = self.__kmeans_initialization()
+                models, apriori = self.__uniform_initialization()
         else:
-            models, apriori = self.__kmeans_initialization()
+            models, apriori = self.__uniform_initialization()
 
         return models, apriori
 
