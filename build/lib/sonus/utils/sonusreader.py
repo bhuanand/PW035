@@ -39,6 +39,10 @@ class SonusReader(object):
     @classmethod
     def from_file(cls, fileName, extension = None):
         """
+	params
+	fileName: representing the name of input file
+	extension: file extension (*.mp3, *.ogg)
+
         opens and reads the data from the file.
         returns SonusReader object
         """
@@ -108,6 +112,10 @@ class SonusReader(object):
 
     @classmethod
     def from_wav(cls, fileName):
+	'''
+	params
+	fileName: file name to read
+	'''
         outputFile = NamedTemporaryFile(mode = 'w+b', delete = False)
         command = [
             converter, '-y',
@@ -131,17 +139,20 @@ class SonusReader(object):
 
     @classmethod
     def from_mp3(cls, fileName):
+	'''
+	params:
+	fileName: a mp3 file to read
+	'''
         return cls.from_file(fileName, extension='mp3')
 
     @classmethod
     def from_ogg(cls, fileName):
+	'''
+	params
+	
+	fileName: a ogg file to be read
+	'''
         return cls.from_file(fileName, extension='ogg')
 
-
-def preprocessAudio(fileName, noise, signalLength):
-    '''
-    preprocess the audio by removing the silent regions
-    in the audio.
-    '''
     
 __all__ = [SonusReader]

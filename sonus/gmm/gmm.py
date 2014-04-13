@@ -209,11 +209,11 @@ class GaussianMixtureModel(object):
                 elif method == 'random':
                     models, apriori = self.__random_initialization()
                 else:
-                    models, apriori = self.__uniform_initialization
+                    models, apriori = self.__uniform_initialization()
             else:
-                models, apriori = self.__uniform_initialization
+                models, apriori = self.__uniform_initialization()
         else:
-            models, apriori = self.__uniform_initialization
+            models, apriori = self.__uniform_initialization()
 
         return models, apriori
 

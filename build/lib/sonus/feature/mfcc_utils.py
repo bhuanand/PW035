@@ -10,9 +10,18 @@ def frameSignal(signal, frameLength, frameStep):
     """
     frame the given signal into overlapping frames.
 
+    Normally a speech signal is not stationary, but seen from a short-time point of view it is.
+    This result from the fact that the glottal system can not change immediately.
+
     frames the signal into 25ms frames which is a standard.
-    making sure that signal is devided into even number of frames,
+    making sure that signal is divided into even number of frames,
     if not padding with the zeros at the end so it does.
+
+    params:
+
+    signal: as a ndarray read by scipy.io.wavfile.read
+    frameLength: length of each frame
+    frameStep: step or gap between successive frames
     """
     # length of the entire signal
     signalLength = len(signal)
@@ -54,6 +63,8 @@ def windowing(frames, **kwargs):
     can give the type of windowing to use in kwargs as:
     typeOfWindow: [hamming,[hanning,[blackman]]]
 
+    params:
+    frames: framez obtained by applying framing funciton on input signal
     return:
     numpy.ndarray of size frames length
     """
