@@ -15,7 +15,7 @@ def main():
     kan_files = test_gmm_win.list_files(['--dirpath=' + kannada])
     hindi_files = test_gmm_win.list_files(['--dirpath=' + hindi])
 
-    nobj = gmm.GaussianMixtureModel.loadobject("C:\\Users\\bhuvan\\sonus\\gmm-uniform\\gmm-object")
+    nobj = gmm.GaussianMixtureModel.loadobject("C:\\Users\\bhuvan\\sonus\\gmm-object")
 
     kan_detected = 0
     hin_detected = 0

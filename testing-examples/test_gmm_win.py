@@ -105,22 +105,7 @@ def main():
 
     GMM.expectationMaximization()
 
-    gmm.GaussianMixtureModel.saveobject(GMM, filepath="C:\\Users\\bhuvan\\sonus\\gmm-uniform")
-
-    languages = ['kannada', 'hindi']
-    for i in range(len_train_set, len_train_set + 50):
-        if i % 2 == 0:
-            l = 'kannada'
-            n = os.path.join(kannada, kan_files[i])
-            a = sonusreader.SonusReader.from_file(n)
-        else:
-            l = 'hindi'
-            n = os.path.join(hindi, hindi_files[i])
-            a = sonusreader.SonusReader.from_file(n)
-
-        m = mfcc.mfcc(a.data, samplerate=a.samplerate)
-
-        print os.path.abspath(n), "actual: " + l, 'predicted: ' + languages[GMM.fit(m)]
+    gmm.GaussianMixtureModel.saveobject(GMM, filepath=" C:\\Users\\bhuvan\\sonus\\uniform\\gmm-object")
 
 if __name__ == '__main__':
     main()
