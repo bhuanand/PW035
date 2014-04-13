@@ -105,7 +105,7 @@ def main():
 
     GMM.expectationMaximization()
 
-    gmm.GaussianMixtureModel.saveobject(GMM, filepath=" C:\\Users\\bhuvan\\sonus\\uniform\\gmm-object")
+    gmm.GaussianMixtureModel.saveobject(GMM, filepath="C:\\Users\\bhuvan\\sonus\\uniform")
 
 if __name__ == '__main__':
     main()

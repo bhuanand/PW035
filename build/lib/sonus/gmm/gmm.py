@@ -152,6 +152,11 @@ class GaussianMixtureModel(object):
         """get the data"""
         return self._data
 
+    @data.setter
+    def data(self, idata):
+        """set the data"""
+        self._data = idata
+
     @property
     def nClusters(self):
         """get number of clusters"""
@@ -333,7 +338,7 @@ class GaussianMixtureModel(object):
             likelihood.append(self.loglikelihood(resp))
 
             # check for convergence
-            if i > 1 and abs(likelihood[-1] - likelihood[-2]) < 1e-4:
+            if i > 1 and abs(likelihood[-1] - likelihood[-2]) < abs(1e-4):
                 break
 
             # maximization step
@@ -401,11 +406,28 @@ class GaussianMixtureModel(object):
 
 
     @classmethod
-    def saveobject(cls, obj, filepath = None):
+    def saveobject(cls, obj, filepath = None, delattrs = True):
         """saves the gmm object for next time usage
+        :param delattrs: flag to indicate if some attributes are to be deleted or not. default True.
         :param obj: object to be stored
         :param filepath: file path at which the object is to be stored
         """
+
+        if delattrs:
+            if hasattr(obj, '_data'):
+                del obj._data
+                obj.data = np.array(list())
+                print 'deleted obj.data'
+
+            if hasattr(obj, '_models'):
+                for model in obj.models:
+                    del model._precisionMatrix
+                    del model._determinant
+                    del model._denominator
+                    model.precisionMatrix = np.array(list())
+                    model.denominator = None
+                    model.determinant = None
+                print 'deleted models data'
 
         homedir = os.path.expanduser('~')
 

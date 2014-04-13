@@ -90,10 +90,3 @@ def mfcc(signal, samplerate = 16000, windowLength = 0.025, windowStep = 0.01,\
 
     # remove the negative inf values found in result
     return res[ ~np.isneginf(res).any(axis = 1)]
-
-
-
-
-
-
-
