@@ -333,7 +333,7 @@ class GaussianMixtureModel(object):
             likelihood.append(self.loglikelihood(resp))
 
             # check for convergence
-            if i > 1 and abs(likelihood[-1] - likelihood[-2]) < 1e-4:
+            if i > 1 and abs(likelihood[-1] - likelihood[-2]) < abs(1e-4):
                 break
 
             # maximization step
