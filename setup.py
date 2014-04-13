@@ -2,12 +2,18 @@
 
 from distutils.core import setup
 
+import os
+
+def read(filename):
+    return open(os.path.join(os.path.dirname(__file__), filename), 'r').read()
+
 setup(
     name='Sonus',
     version='1.0',
     description='Language Detection System in python',
     author='Bhuvan Anand, Krishna Ramesh',
     packages=['sonus', 'sonus.feature', 'sonus.utils', 'sonus.gmm'],
+    long_description = read('README'),
     classifiers=[
         'Development Status :: 1.0',
         'Environment :: Console',
