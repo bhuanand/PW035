@@ -9,7 +9,6 @@ def mfcc(signal, samplerate = 16000, windowLength = 0.025, windowStep = 0.01,\
     computes MFCC - Mel Frequency Cepstral Co efficients of the given
     audio signal.
 
-
     params:
     signal: input audio signal to be processed.
     samplerate: sample rate of the signal.
@@ -85,8 +84,11 @@ def mfcc(signal, samplerate = 16000, windowLength = 0.025, windowStep = 0.01,\
 
     # remove the nan values in the result
     res = res[ ~np.isnan(res).any(axis = 1)]
+
+    # remove any inf values found in the result
     res = res[ ~np.isinf(res).any(axis = 1)]
 
+    # remove the negative inf values found in result
     return res[ ~np.isneginf(res).any(axis = 1)]
 
 
