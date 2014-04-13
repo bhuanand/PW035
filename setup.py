@@ -7,7 +7,7 @@ setup(
     version='1.0',
     description='Language Detection System in python',
     author='Bhuvan Anand, Krishna Ramesh',
-    packages=['sonus'],
+    packages=['sonus', 'sonus.feature', 'sonus.utils', 'sonus.gmm'],
     classifiers=[
         'Development Status :: 1.0',
         'Environment :: Console',
