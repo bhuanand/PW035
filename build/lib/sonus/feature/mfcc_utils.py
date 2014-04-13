@@ -6,6 +6,7 @@ from scipy.fftpack import dct
 if sys.version_info >= (3, 0):
     basestring = str
 
+
 def frameSignal(signal, frameLength, frameStep):
     """
     frame the given signal into overlapping frames.
@@ -17,18 +18,16 @@ def frameSignal(signal, frameLength, frameStep):
     making sure that signal is divided into even number of frames,
     if not padding with the zeros at the end so it does.
 
-    params:
-
-    signal: as a ndarray read by scipy.io.wavfile.read
-    frameLength: length of each frame
-    frameStep: step or gap between successive frames
+    :param signal: as a ndarray read by scipy.io.wavfile.read
+    :param frameLength: length of each frame.
+    :param frameStep: step or gap between successive frames.
     """
     # length of the entire signal
     signalLength = len(signal)
 
     # length of frames
     frameLength = round(frameLength)
-    
+
     # normally 10ms will do better. to introduce some overlapping
     frameStep = round(frameStep)
 
@@ -47,26 +46,26 @@ def frameSignal(signal, frameLength, frameStep):
 
     # compute the indices for framing
     indices = np.tile(np.arange(0, frameLength), (numFrames, 1)) + \
-       np.transpose(np.tile(np.arange(0, numFrames * frameStep, frameStep), (frameLength, 1)))
+              np.transpose(np.tile(np.arange(0, numFrames * frameStep, frameStep), (frameLength, 1)))
 
-    indices = np.array(indices, dtype = np.int32)
+    # indices array
+    indices = np.array(indices, dtype=np.int32)
 
-    # get the frames
+    # get the frames by indexing evenSignal array with indices array
     frames = evenSignal[indices]
-    
+
     # return the frames
     return frames
 
 def windowing(frames, **kwargs):
     """
-    apply windowing on input 'signal' giving 
-    can give the type of windowing to use in kwargs as:
-    typeOfWindow: [hamming,[hanning,[blackman]]]
+    apply windowing on input 'signal' giving
+    :param frames: frames obtained by applying framing funciton on input signal
+    :param kwargs: can give the type of windowing to use in kwargs as:
+                   typeOfWindow: [hamming,[hanning,[blackman]]]
 
-    params:
-    frames: framez obtained by applying framing funciton on input signal
     return:
-    numpy.ndarray of size frames length
+    numpy.ndarray of size equals to length of input frames array.
     """
     # result array
     func = None
@@ -77,7 +76,7 @@ def windowing(frames, **kwargs):
     # if typeOfWindow is given in the input choose appropriate windowing
     if kwargs.get('typeOfWindow', False):
         window = kwargs.get('typeOfWindow')
-    
+
     # apply appropriate windowing function and return result array
     if isinstance(window, basestring):
         # check if the window type is string if true then proceed
@@ -91,47 +90,46 @@ def windowing(frames, **kwargs):
         # raise TypeError indicating to provide string as arg for typeOfWindow
         raise TypeError, "typeOfWindow argument must be a string."
 
-    return np.array( map( lambda frame: np.multiply( frame, func( len( frame))), frames))
+    return np.array(map(lambda frame: np.multiply(frame, func(len(frame))), frames))
 
-def preemphasis(signal, emphasiscoeff = 0.97):
+
+def preemphasis(signal, emphasiscoeff=0.97):
     """
     perform preemphasis on the given signal
     y[i] = x[i] - emphasiscoeff * x[i - 1]
+
+    :param signal: signal to emphasis
+    :param emphasiscoeff: usually between 0.9 - 1 default: 0.97
 
     reason:
     often when dealing with the signals of low frequency which are sampled
     at high rate, the adjacent samples tend to yield similar numerical values.
     
-    the reason is that the low frequency means they thend to vary very slowly with
+    the reason is that the low frequency means they tend to vary very slowly with
     the time, so does the numerical values.
 
     by subtraction we remove part of signals that did not change in relate to its
     adjacent samples.
 
-    params:
-    signal: signal to emphasis
-    emphasiscoeff: usually between 0.9 - 1 default: 0.97
-    
     return:
-    preemphasized signal
+    preemphasized signal same dimension as input signal
     """
-    
+
     return np.append(signal[0], signal[1:] - emphasiscoeff * signal[:-1])
+
 
 def magnitudeSpectrum(frames, nfft):
     """
-    computes the magnitude spectrum of the frames. 
+    computes the magnitude spectrum of the frames.
+
+    :param frames: frames array
+                   magnetudeSpectrum function will apply the discrete cosine transform
+                   on all the frames present in the frames array.
+    :param nfft:  number of points in the frame to use for DFT.
+
     if frames is of dimension: numFrames * frameLength
     output will be a float array which has dimension:
     numFrames * nfft
-
-    application:
-    frames: frames array
-    magnetudeSpectrum function will apply the discrete cosine transform 
-    on all the frames present in the frames array.
-
-    nfft: 
-    number of points in the frame to use for DFT.
 
     this function internally calls numpy.rfft function
     which computes DFT on purely float values.
@@ -148,13 +146,13 @@ def magnitudeSpectrum(frames, nfft):
 
     return np.absolute(compMagSpec)
 
+
 def powerSpectrum(magSpecFrames, nfft):
     """
     computes the power spectrum of each frame present in the frames array.
 
-    application:
-    frames: frames array
-    nfft: number points to be choosen for application of power spectrum
+    :param magSpecFrames: frames array obtained after applying magnetudeSpectrum function
+    :param nfft: number points to be choosen for application of power spectrum
 
     the power spectrum answers how much of a signal is at the frequency w.
 
@@ -162,13 +160,16 @@ def powerSpectrum(magSpecFrames, nfft):
     returns a numFrames * nfft array with each row containing the power 
     spectrum of the frame.
     """
-    
+
     return (1.0 / nfft) * (np.square(magSpecFrames))
 
-def logPowerSpectrum(powerSpectrum, norm = 1):
+
+def logPowerSpectrum(powerSpectrum, norm=1):
     """
     logPowerSpectrum is normalised aroung norm value.
     so that max value is 1
+    :param powerSpectrum: frames array obtained after applying powerSpectrum function.
+    :param norm: normal value.
     """
     powerSpectrum[powerSpectrum <= 1e-30] = 1e-30
 
@@ -183,25 +184,34 @@ def logPowerSpectrum(powerSpectrum, norm = 1):
 def hertzToMelScale(hertz):
     """
     convert from hertz value to corresponding mel scale value.
-    params:
-    hertz: numpy array with hz values
+    :param hertz:  numpy array with hz values
+
     return: numpy array containing corresponding mel values.
     """
     return 2595.0 * np.log10(1 + hertz / 700.00)
 
+
 def melScaleToHertz(mel):
     """
     convert from mel scale value to hertz.
-    params:
-    mel: mel value or numpy array of values
+    :param mel: mel value or numpy array of values
+
     return: numpy array containing frequency values
     """
-    return 700.00 * ( 10 ** (mel/ 2595.0) - 1)
+    return 700.00 * ( 10 ** (mel / 2595.0) - 1)
 
-def melFilterBanks(numFilters = 26, nfft = 512, samplerate = 16000,\
-                       lowFreq = 133.33, highFreq = None):
+
+def melFilterBanks(numFilters=26, nfft=512, samplerate=16000, \
+                   lowFreq=133.33, highFreq=None):
     """
     returns the mel filterbank.
+    :param numFilters: number of filters to be used
+    :param nfft: number of points in the result of fft
+    :param samplerate: samplerate of the input audio signal
+    :param lowFreq: low frequency for computing mel bank
+    :param highFreq: high frequency for computing mel bank
+
+
     numpy array of dimension:
     numFilters * (nfft /2 + 1)
 
@@ -220,14 +230,14 @@ def melFilterBanks(numFilters = 26, nfft = 512, samplerate = 16000,\
     freqValues = melScaleToHertz(melValues)
 
     # convert the frequencies to fft bins
-    fftBin = np.floor( (nfft + 1) * freqValues / samplerate)
+    fftBin = np.floor((nfft + 1) * freqValues / samplerate)
 
     # frequency banks
-    filterBank = np.zeros([numFilters, nfft/2 + 1], dtype=np.float32)
+    filterBank = np.zeros([numFilters, nfft / 2 + 1], dtype=np.float32)
 
     for i in xrange(0, numFilters):
         # case of k < f(m - 1)
-        filterBank[i, np.arange(0, int(fftBin[i]))] = 0 
+        filterBank[i, np.arange(0, int(fftBin[i]))] = 0
 
         # case of f(m - 1) <= k <= f(m)
         for j in xrange(int(fftBin[i]), int(fftBin[i + 1])):
@@ -241,28 +251,35 @@ def melFilterBanks(numFilters = 26, nfft = 512, samplerate = 16000,\
 
     return filterBank
 
-def filterBankEnergies(filterBank, powerSpectrum, nfft = 512):
+
+def filterBankEnergies(filterBank, powerSpectrum, nfft=512):
     """
     returns a tuple consisting of filterbank energies and energy present
     in each frame
+    :param filterBank: filter bank energies computed by applying melFilterBank function
+    :param powerSpectrum: powerSpectrum of signal obtained using powerSpectrum function
+    :param nfft: number of points in fft output
     """
-    energy = np.sum(powerSpectrum, axis = 1)
-    
+    energy = np.sum(powerSpectrum, axis=1)
+
     # keep only first 257 co efficients from power spectrum of
     # each frame
-    
+
     filBankEnergy = np.dot(powerSpectrum, np.transpose(filterBank))
 
     return filBankEnergy, energy
+
 
 def logFilterBankEnergies(filterBankEnergy):
     """
     computes the logarithm of each filter vector present
     in the filterBank returns it
+    :param filterBankEnergy: filter bank energies computed by applying melFilterBank function
     """
     np.seterr(divide='ignore')
     return np.log10(filterBankEnergy)
-    
+
+
 def discreteCosineTransform(logFilterBankEnergy, numCepstrals):
     """
     apply the discrete cosine transform on the 
@@ -272,33 +289,42 @@ def discreteCosineTransform(logFilterBankEnergy, numCepstrals):
     for more information about parameters see scipy.fftpack.dct 
     documentation
 
-    return number of vector * numCepstral array
+    :rtype : return number of vector * numCepstral array
+    :param logFilterBankEnergy: obtained by applying logFilterBankEnergy function
+    :param numCepstrals: number of cepstral coefficients
     """
-    
-    return dct(logFilterBankEnergy.astype(np.float32), norm = 'ortho')[:, :numCepstrals]
 
-def cepstralLifter(cepstra, lifterCoeff = 22):
+    return dct(logFilterBankEnergy.astype(np.float32), norm='ortho')[:, :numCepstrals]
+
+
+def cepstralLifter(cepstra, lifterCoeff=22):
     """
     lifts the cepstral values of high frequency DCT coefficients
+    :param cepstra: cepstra obtained by applying DCT
+    :param lifterCoeff: lifter coefficient
     """
-    
-    numFrames, numCepstrals = np.shape(cepstra)
-    
-    temp = np.arange(numCepstrals)
-    
-    return (1 + (lifterCoeff / 2) * np.sin(np.pi * temp/ lifterCoeff)) * cepstra
 
-def computeDelta(cepstra, cepstralSpan = 2):
+    numFrames, numCepstrals = np.shape(cepstra)
+
+    temp = np.arange(numCepstrals)
+
+    return (1 + (lifterCoeff / 2) * np.sin(np.pi * temp / lifterCoeff)) * cepstra
+
+
+def computeDelta(cepstra, cepstralSpan=2):
     """
     calculate the differential and accelaration coefficients for the cepstrum.
     
+    :param cepstra: cepstral coefficients
+    :param cepstralSpan: span over which delta values are computed
+
     reason:
     MFCC cepstrum gives the power spectral envelope of single frame.
     but the signal is dynamic in nature.
     we calculate the trajectories of cepstrals of each frame which can
     improve the performance of learning.
     """
-    
+
     # coefficient matrix
     dataVector = np.transpose(np.copy(cepstra))
 
@@ -308,8 +334,8 @@ def computeDelta(cepstra, cepstralSpan = 2):
     rows, cols = dataVector.shape
 
     # duplicate the first and last rows by 'cepstralSpan' times
-    dataVector = np.append( np.tile( dataVector[0], cepstralSpan).reshape(cepstralSpan, cols), dataVector, axis = 0)
-    dataVector = np.append( dataVector, np.tile( dataVector[-1], cepstralSpan).reshape(cepstralSpan, cols), axis = 0)
+    dataVector = np.append(np.tile(dataVector[0], cepstralSpan).reshape(cepstralSpan, cols), dataVector, axis=0)
+    dataVector = np.append(dataVector, np.tile(dataVector[-1], cepstralSpan).reshape(cepstralSpan, cols), axis=0)
 
     deltaVector = np.zeros((rows, cols))
 
@@ -317,12 +343,16 @@ def computeDelta(cepstra, cepstralSpan = 2):
     for i in range(cepstralSpan):
         from_one = cepstralSpan + i + 1
         from_two = cepstralSpan - i - 1
-        
-        deltaVector = np.add( deltaVector, (i + 1) * np.subtract(dataVector[from_one: from_one + rows], dataVector[from_two: from_two + rows]))
-    
-    deltaVector = deltaVector / (2 * np.sum( np.square( np.arange(1, cepstralSpan + 1))))
-    
+
+        deltaVector = np.add(deltaVector, (i + 1) * np.subtract(dataVector[from_one: from_one + rows],
+                                                                dataVector[from_two: from_two + rows]))
+
+    deltaVector = deltaVector / (2 * np.sum(np.square(np.arange(1, cepstralSpan + 1))))
+
     return np.transpose(deltaVector)
-    
-__all__ = [windowing, frameSignal, preemphasis, magnitudeSpectrum, powerSpectrum, hertzToMelScale, melScaleToHertz, melFilterBanks,\
-               filterBankEnergies, logFilterBankEnergies, discreteCosineTransform, cepstralLifter, logPowerSpectrum, computeDelta]
+
+
+__all__ = [windowing, frameSignal, preemphasis, magnitudeSpectrum, powerSpectrum, hertzToMelScale, melScaleToHertz,
+           melFilterBanks, \
+           filterBankEnergies, logFilterBankEnergies, discreteCosineTransform, cepstralLifter, logPowerSpectrum,
+           computeDelta]

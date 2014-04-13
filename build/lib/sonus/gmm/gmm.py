@@ -7,19 +7,27 @@ import random
 import cPickle
 
 def muAndSigma(data, nclusters):
+    """
+    compute mean and covariance for each cluster.
+
+    :param data: data for the cluster found by using initialization.
+    :param nclusters: number of clusters
+    :return: returns a tuple consisting of mean and covariance.
+    """
     return np.mean(data, axis = 0), np.cov(data, rowvar = 0), nclusters
 
 class GaussianCluster(object):
-    '''
+    """
     a class for holding values: (responsibilities) of
     each cluster in a Gaussian Model
-    '''
+    """
     def __init__(self, mean, covariance, nClusters):
-        '''
+        """
         constructor for GaussianCluster class
-        input calues:
-            mean, covariance.
-        '''
+        :param mean: mean for clsuter
+        :param covariance: covariance for the cluster
+        :param nClusters: number of clusters
+        """
         self._mean = mean
         self._covariance = covariance + 1e-3 * np.eye(len(covariance))
         self._covariance = np.diag(np.diag(self.covariance))
@@ -30,61 +38,65 @@ class GaussianCluster(object):
 
     @property
     def mean(self):
-        '''get the mean value'''
+        """get the mean value"""
         return self._mean
 
     @mean.setter
     def mean(self, imean):
-        '''set the mean value'''
+        """set the mean value"""
         self._mean = imean
 
     @property
     def covariance(self):
-        '''get the covariance value'''
+        """get the covariance value"""
         return self._covariance
 
     @covariance.setter
     def covariance(self, icovariance):
-        '''set the covariance value'''
+        """set the covariance value"""
         self._covariance = icovariance
 
     @property
     def nClusters(self):
-        '''get the number of clusters'''
+        """get the number of clusters"""
         return self._nClusters
 
     @property
     def precisionMatrix(self):
-        '''get precisionMatrix'''
+        """get precisionMatrix"""
         return self._precisionMatrix
 
     @precisionMatrix.setter
     def precisionMatrix(self, iprecisionMatrix):
-        '''set the precisionMatrix'''
+        """set the precisionMatrix"""
         self._precisionMatrix = iprecisionMatrix
 
     @property
     def determinant(self):
-        '''get the determinant'''
+        """get the determinant"""
         return self._determinant
 
     @determinant.setter
     def determinant(self, ideterminant):
-        '''set the determinant'''
+        """set the determinant"""
         self._determinant = ideterminant
 
     @property
     def denominator(self):
-        '''get the denominator'''
+        """get the denominator"""
         return self._denominator
 
     @denominator.setter
     def denominator(self, idenominator):
-        '''set the denominator'''
+        """set the denominator"""
         self._denominator = idenominator
 
     def updateCluster(self, imu, isigma):
-        '''update the mean and covariance values'''
+        """
+        update the mean and covariance values
+        :param imu: new mean for cluster
+        :param isigma: new covariance for cluster
+        """
         self.mean = imu
         self.covariance = isigma + 1e-3 * np.eye(len(isigma))
 
@@ -94,16 +106,17 @@ class GaussianCluster(object):
         self.denominator = ((2.0 * np.pi) ** (-self.nClusters / 2.0)) * (self.determinant ** -0.5)
 
     def gaussianPDF(self, idata):
-        '''
+        """
         applies Gaussian Probability Density Function
         to the input data.
-        '''
+        :param idata: data vector for computing density
+        """
         difference = idata - self.mean
         pdf = self.denominator * np.exp( -0.5 * np.dot( np.dot(difference.transpose(), self.precisionMatrix),  difference))
         return pdf
 
 class GaussianMixtureModel(object):
-    '''
+    """
     representation of Gaussian Mixture Model probability distribution.
 
     initializes the parameters such that every mixture component has means
@@ -121,8 +134,14 @@ class GaussianMixtureModel(object):
         using two steps:
             E Step: (Expectation Step)
             M Step: (Maximization Step)
-    '''
+    """
     def __init__(self, data, nClusters, options = {}):
+        """
+        constructor for GaussianMixtureModel class
+        :param data: mixture or data to be clustered
+        :param nClusters: number of clusters
+        :param options: options such os specifying method of initialization
+        """
         self._data = data
         self._nClusters = nClusters
         self._options = options
@@ -130,41 +149,41 @@ class GaussianMixtureModel(object):
 
     @property
     def data(self):
-        '''get the data'''
+        """get the data"""
         return self._data
 
     @property
     def nClusters(self):
-        '''get number of clusters'''
+        """get number of clusters"""
         return self._nClusters
 
     @property
     def options(self):
-        '''get the properties'''
+        """get the properties"""
         return self._options
 
     @property
     def models(self):
-        '''get the models in gmm'''
+        """get the models in gmm"""
         return self._models
 
     @property
     def apriori(self):
-        '''get the apriori values'''
+        """get the apriori values"""
         return self._apriori
 
     @apriori.setter
     def apriori(self, iapriori):
-        '''set the apriori vals'''
+        """set the apriori vals"""
         self._apriori = iapriori
 
     def initializeClusters(self):
-        '''
+        """
         Given the number of clusters and the data,
         lets initialize the responsibilities of each class.
 
         responsibilities include
-        '''
+        """
         # get the dimension of the input data
         rows, cols = self._data.shape
 
@@ -199,10 +218,10 @@ class GaussianMixtureModel(object):
         return models, apriori
 
     def __uniform_initialization(self):
-        '''
+        """
         given the data points, uniformly assign them to different
         clusters then estimate the parameters
-        '''
+        """
 
         # shuffle the data in the input
         np.random.shuffle(self._data)
@@ -221,10 +240,10 @@ class GaussianMixtureModel(object):
         return models, apriori
 
     def __random_initialization(self):
-        '''
+        """
         given the data points, randomly assign them to different
         clsuters then estimate the parameters
-        '''
+        """
 
         # set the seed value for the random
         random.seed(os.getpid())
@@ -247,10 +266,10 @@ class GaussianMixtureModel(object):
         return models, apriori
 
     def __kmeans_initialization(self):
-        '''
+        """
         given the data points, cluster them by applying kmeans clustering
         algorithm.
-       '''
+       """
         # apply kmeans clustering to get the centroids and labels for each vector in data
         labels, error, nfound = Pycluster.kcluster(self._data, self._nClusters)
 
@@ -268,23 +287,29 @@ class GaussianMixtureModel(object):
 
 
     def means(self):
-        '''return the list of mean values of all comprising models'''
+        """return the list of mean values of all comprising models"""
         res = [self.models[i].mean for i in xrange(self.nClusters)]
 
         return res
 
     def covariance(self):
-        '''return the list covariance matrices of all comprising models'''
+        """return the list covariance matrices of all comprising models"""
         res = [self.models[i].covariance for i in xrange(self.nClusters)]
 
         return res
 
     def loglikelihood(self, resp):
-        '''compute the log likelihood of gaussian mixture'''
+        """compute the log likelihood of gaussian mixture
+        :param resp: resp matrix computed by applying E step of em algorithm
+        """
         return np.sum( np.log( np.sum( resp, axis = 1)))
 
     def fit(self, data):
-        '''fits the data GMM, and return the label of GMM model it belongs'''
+        """fits the data GMM, and return the label of GMM model it belongs
+        :param data: fit the data against the model
+
+        returns the cluster it belongs
+        """
         resp = self.eStep(data=data)
 
         res = resp.argmax(axis = 1)
@@ -293,11 +318,12 @@ class GaussianMixtureModel(object):
 
         return unique_vals[ np.argmax( np.bincount( indices))]
 
-    def expectationMaximization(self, iterations = 40):
-        '''
+    def expectationMaximization(self, iterations = 10):
+        """
         apply the expectation maximization algorithm to maximize the likelihood
         of a data belonging to particular class.
-        '''
+        :param iterations: maximum iterations
+        """
         likelihood = list()
 
         for i in xrange(iterations):
@@ -314,7 +340,9 @@ class GaussianMixtureModel(object):
             self.mStep(resp)
 
     def eStep(self, data = None):
-        '''expectation step'''
+        """expectation step
+        :param data: input data
+        """
         if data == None:
             data = self.data
         else:
@@ -330,12 +358,12 @@ class GaussianMixtureModel(object):
         return resp
 
     def mStep(self, resp):
-        '''
+        """
         maximization step
         followed wikipedia
         http://en.wikibooks.org/wiki/Data_Mining_Algorithms_In_R/Clustering/Expectation_Maximization_%28EM%29
         used formulae's on this page for computing.
-        '''
+        """
         # get the transpose of expected values for further usage
         # within the function
         respTranspose = resp.T
@@ -374,7 +402,10 @@ class GaussianMixtureModel(object):
 
     @classmethod
     def saveobject(cls, obj, filepath = None):
-        '''saves the gmm object for next time usage'''
+        """saves the gmm object for next time usage
+        :param obj: object to be stored
+        :param filepath: file path at which the object is to be stored
+        """
 
         homedir = os.path.expanduser('~')
 
@@ -443,7 +474,9 @@ class GaussianMixtureModel(object):
 
     @classmethod
     def loadobject(cls, filepath = None):
-        '''loads the previosly stored object'''
+        """loads the previosly stored object
+        :param filepath: file path to load the object from
+        """
 
         homedir = os.path.expanduser('~')
 
