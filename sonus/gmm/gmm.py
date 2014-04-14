@@ -6,35 +6,36 @@ import sys
 import random
 import cPickle
 
-def muAndSigma(data, nclusters):
+def muAndSigma(data, dimension):
     """
     compute mean and covariance for each cluster.
 
     :param data: data for the cluster found by using initialization.
-    :param nclusters: number of clusters
+
     :return: returns a tuple consisting of mean and covariance.
     """
-    return np.mean(data, axis = 0), np.cov(data, rowvar = 0), nclusters
+    print dimension
+    return np.mean(data, axis = 0), np.cov(data, rowvar = 0), dimension
 
 class GaussianCluster(object):
     """
     a class for holding values: (responsibilities) of
     each cluster in a Gaussian Model
     """
-    def __init__(self, mean, covariance, nClusters):
+    def __init__(self, mean, covariance, dimension):
         """
         constructor for GaussianCluster class
         :param mean: mean for clsuter
         :param covariance: covariance for the cluster
-        :param nClusters: number of clusters
+        :param dimension: dimension of the data vector
         """
         self._mean = mean
         self._covariance = covariance + 1e-3 * np.eye(len(covariance))
         self._covariance = np.diag(np.diag(self.covariance))
-        self._nClusters = nClusters
+        self._dimension = dimension
         self._precisionMatrix = np.linalg.inv(self.covariance)
         self._determinant = np.fabs(np.linalg.det(self.covariance))
-        self._denominator = ((2.0 * np.pi) ** (-self.nClusters / 2.0)) * (self.determinant ** -0.5)
+        self._denominator = ((2.0 * np.pi) ** (-self.dimension / 2.0)) * (self.determinant ** -0.5)
 
     @property
     def mean(self):
@@ -57,9 +58,9 @@ class GaussianCluster(object):
         self._covariance = icovariance
 
     @property
-    def nClusters(self):
-        """get the number of clusters"""
-        return self._nClusters
+    def dimension(self):
+        """get the number of dimension"""
+        return self._dimension
 
     @property
     def precisionMatrix(self):
@@ -103,7 +104,7 @@ class GaussianCluster(object):
         # update the precision matrix and determinant
         self.precisionMatrix = np.linalg.inv(self.covariance)
         self.determinant = np.fabs(np.linalg.det(self.covariance))
-        self.denominator = ((2.0 * np.pi) ** (-self.nClusters / 2.0)) * (self.determinant ** -0.5)
+        self.denominator = ((2.0 * np.pi) ** (-self.dimension / 2.0)) * (self.determinant ** -0.5)
 
     def gaussianPDF(self, idata):
         """
@@ -231,6 +232,7 @@ class GaussianMixtureModel(object):
         # shuffle the data in the input
         np.random.shuffle(self._data)
 
+        # get the dimension of the input data
         rows, cols = self._data.shape
 
         chunkSize = rows / self._nClusters
@@ -238,7 +240,7 @@ class GaussianMixtureModel(object):
         # create clusters with the data got from chunks
         models = []
         for i in xrange(self._nClusters):
-            models.append(GaussianCluster( *muAndSigma( self._data[i * chunkSize: (i + 1) * chunkSize], self.nClusters)))
+            models.append(GaussianCluster( *muAndSigma( self._data[i * chunkSize: (i + 1) * chunkSize], cols)))
 
         apriori = np.ones(self._nClusters, dtype = np.float32) / self._nClusters
 
@@ -253,6 +255,9 @@ class GaussianMixtureModel(object):
         # set the seed value for the random
         random.seed(os.getpid())
 
+        # get the dimension of the input data
+        rows, cols = self._data.shape
+
         # now select random samples from the data
         randomSamples = random.sample(self._data, self._nClusters)
 
@@ -264,7 +269,7 @@ class GaussianMixtureModel(object):
             randomData[random.randint(0, self._nClusters - 1)].append(vector)
 
 
-        models = [GaussianCluster( *muAndSigma(randomData[i], self.nClusters)) for i in xrange(self._nClusters)]
+        models = [GaussianCluster( *muAndSigma(randomData[i], cols)) for i in xrange(self._nClusters)]
 
         apriori = np.ones(self._nClusters, dtype = np.float32) / np.array([len(elem) for elem in randomData])
 
@@ -278,13 +283,16 @@ class GaussianMixtureModel(object):
         # apply kmeans clustering to get the centroids and labels for each vector in data
         labels, error, nfound = Pycluster.kcluster(self._data, self._nClusters)
 
+        # get the dimension of the input data
+        rows, cols = self._data.shape
+
         clusterData = [[] for i in xrange(self._nClusters)]
 
         # assign vectors to clusters
         for data, label in zip(self._data, labels):
             clusterData[label].append(data)
 
-        models = [GaussianCluster( *muAndSigma(clusterData[i], self.nClusters)) for i in xrange(self._nClusters)]
+        models = [GaussianCluster( *muAndSigma(clusterData[i], cols)) for i in xrange(self._nClusters)]
 
         apriori = np.ones(self._nClusters, dtype = np.float32) / np.array([len(elem) for elem in clusterData])
 
