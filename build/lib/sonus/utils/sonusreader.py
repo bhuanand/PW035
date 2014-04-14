@@ -124,7 +124,7 @@ class SonusReader(object):
             '-vn',  # drop any video streams in the file
             '-sn',  # drop any subtitles present in the file
             '-f', 'wav',  # specify the output file format needed
-            '-ar', '22050',  # uniform sample rate for all audio files
+            '-ar', '44100',  # uniform sample rate for all audio files
             outputFile.name
         ]
 
