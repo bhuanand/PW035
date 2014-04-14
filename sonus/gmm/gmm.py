@@ -14,7 +14,7 @@ def muAndSigma(data, dimension):
 
     :return: returns a tuple consisting of mean and covariance.
     """
-    print dimension
+
     return np.mean(data, axis = 0), np.cov(data, rowvar = 0), dimension
 
 class GaussianCluster(object):
@@ -426,16 +426,6 @@ class GaussianMixtureModel(object):
                 del obj._data
                 obj.data = np.array(list())
                 print 'deleted obj.data'
-
-            if hasattr(obj, '_models'):
-                for model in obj.models:
-                    del model._precisionMatrix
-                    del model._determinant
-                    del model._denominator
-                    model.precisionMatrix = np.array(list())
-                    model.denominator = None
-                    model.determinant = None
-                print 'deleted models data'
 
         homedir = os.path.expanduser('~')
 
